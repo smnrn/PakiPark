@@ -21,9 +21,9 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/Frontend/src/*"]
     }
   },
-  "include": ["src/app/**/*", "src/styles/**/*", "vite.config.ts"],
-  "exclude": ["node_modules", "src/backend"]
+  "include": ["src/Frontend/**/*"],
+  "exclude": ["node_modules", "src/Backend"]
 }

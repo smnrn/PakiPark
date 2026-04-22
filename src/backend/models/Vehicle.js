@@ -14,19 +14,18 @@ const Vehicle = sequelize.define(
       type: DataTypes.ENUM('sedan', 'suv', 'van', 'truck', 'motorcycle', 'hatchback', 'pickup'),
       defaultValue: 'sedan',
     },
-    orDoc:    { type: DataTypes.TEXT,    defaultValue: null },
-    crDoc:    { type: DataTypes.TEXT,    defaultValue: null },
-    isActive: { type: DataTypes.BOOLEAN, defaultValue: true },
+    orDoc:       { type: DataTypes.TEXT,    defaultValue: null },
+    crDoc:       { type: DataTypes.TEXT,    defaultValue: null },
+    isDefault:   { type: DataTypes.BOOLEAN, defaultValue: false }, // pre-selected for new bookings
   },
   {
     tableName:  'vehicles',
     timestamps: true,
     indexes: [
-      // ── User's vehicles list ───────────────────────────────────────────
-      // SELECT * FROM vehicles WHERE "userId"=$1 AND "isActive"=true
-      { name: 'idx_vehicles_user_active', fields: ['userId', 'isActive'] },
+      // SELECT * FROM vehicles WHERE "userId"=$1
+      { name: 'idx_vehicles_user', fields: ['userId'] },
 
-      // ── Plate number lookup (admin search, conflict checks) ────────────
+      // Plate number lookup (admin search, conflict checks)
       { name: 'idx_vehicles_plate', fields: ['plateNumber'] },
     ],
   }

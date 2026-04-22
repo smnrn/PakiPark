@@ -50,11 +50,12 @@ const Booking = sequelize.define(
     },
 
     // ── Lifecycle timestamps ───────────────────────────────────────────────────
-    checkInAt:    { type: DataTypes.DATE, allowNull: true },
-    checkOutAt:   { type: DataTypes.DATE, allowNull: true },
-    cancelledAt:  { type: DataTypes.DATE, allowNull: true },
-    cancelReason: { type: DataTypes.TEXT, allowNull: true },
-    finalAmount:  { type: DataTypes.FLOAT, allowNull: true },   // computed at checkout (₱15/hr × elapsed hrs)
+    checkInAt:       { type: DataTypes.DATE, allowNull: true },
+    checkOutAt:      { type: DataTypes.DATE, allowNull: true },
+    cancelledAt:     { type: DataTypes.DATE, allowNull: true },
+    cancelReason:    { type: DataTypes.TEXT, allowNull: true },
+    finalAmount:     { type: DataTypes.FLOAT, allowNull: true },   // computed at checkout (₱15/hr × elapsed hrs)
+    reminderSentAt:  { type: DataTypes.DATE, allowNull: true },    // set when 30-min reminder notification is sent
 
 
     // ── User snapshot (captured at booking-creation, never JOIN-fetched) ───────

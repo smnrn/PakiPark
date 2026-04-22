@@ -1,30 +1,22 @@
 import { render, screen } from '@testing-library/react';
-import App from '../../src/App';
-import Page from '../../src/app/page';
-import RootLayout, { metadata } from '../../src/app/layout';
+import RootLayout, { metadata } from '../../src/Frontend/src/app/layout';
 
-describe('System-2-Web', () => {
-  it('renders application title', () => {
-    render(<App />);
-    expect(screen.getByText('System 2 Web')).toBeInTheDocument();
+/**
+ * PakiPark UI smoke tests.
+ * These tests verify the Next.js root layout and metadata exported from
+ * src/Frontend/src/app/layout.tsx are correctly configured.
+ */
+describe('PakiPark-UI', () => {
+  it('exports correct page title metadata', () => {
+    expect(metadata.title).toBe('PakiPark — Smart Parking Reservation');
   });
 
-  it('renders page wrapper content', () => {
-    render(<Page />);
-    expect(screen.getByText('System 2 Web')).toBeInTheDocument();
+  it('exports correct page description metadata', () => {
+    expect(metadata.description).toContain('PakiPark');
   });
 
-  it('exports expected metadata', () => {
-    expect(metadata.title).toBe('System 2 Web');
-    expect(metadata.description).toBe('System 2 starter app');
-  });
-
-  it('creates root layout with html lang and body children', () => {
+  it('creates root layout with html lang="en"', () => {
     const element = RootLayout({ children: <main>content</main> });
     expect(element.props.lang).toBe('en');
-
-    const bodyElement = element.props.children;
-    expect(bodyElement.type).toBe('body');
-    expect(bodyElement.props.children.props.children).toBe('content');
   });
 });

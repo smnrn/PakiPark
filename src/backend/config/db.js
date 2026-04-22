@@ -68,9 +68,57 @@ const PERFORMANCE_INDEXES = [
 ];
 
 /**
- * Connect to PostgreSQL, sync all models, then apply the extra performance
- * indexes that Sequelize cannot represent in model `indexes` declarations.
+ * Idempotent DDL migrations run at every startup.
+ * These cover columns/tables that Sequelize's alter:true cannot apply
+ * because Supabase has views built on top of those tables.
+ *
+ * All statements use IF NOT EXISTS / IF EXISTS so they are safe to re-run.
  */
+const STARTUP_MIGRATIONS = [
+  // ── bookings: reminder tracking ──────────────────────────────────────────────
+  `ALTER TABLE bookings ADD COLUMN IF NOT EXISTS "reminderSentAt" TIMESTAMPTZ`,
+
+  // ── vehicles: default selection ──────────────────────────────────────────────
+  `ALTER TABLE vehicles ADD COLUMN IF NOT EXISTS "isDefault" BOOLEAN DEFAULT false`,
+
+  // ── locations: convert operatingHours from varchar to jsonb ─────────────────
+  // Step 1: add a new jsonb column alongside the old varchar one
+  `ALTER TABLE locations ADD COLUMN IF NOT EXISTS "operatingHoursJson" JSONB`,
+  // Step 2: backfill rows where it's still null with the default schedule
+  `UPDATE locations
+   SET "operatingHoursJson" = '{"mon":{"open":"06:00","close":"23:00","closed":false},"tue":{"open":"06:00","close":"23:00","closed":false},"wed":{"open":"06:00","close":"23:00","closed":false},"thu":{"open":"06:00","close":"23:00","closed":false},"fri":{"open":"06:00","close":"23:00","closed":false},"sat":{"open":"06:00","close":"23:00","closed":false},"sun":{"open":"06:00","close":"23:00","closed":false}}'::jsonb
+   WHERE "operatingHoursJson" IS NULL`,
+
+  // ── users: soft-delete ───────────────────────────────────────────────────────
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS "deletedAt" TIMESTAMPTZ`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS "gcashNumber" VARCHAR(15)`,
+
+  // ── notifications table ───────────────────────────────────────────────────────
+  `CREATE TABLE IF NOT EXISTS notifications (
+    id           SERIAL PRIMARY KEY,
+    "userId"     INTEGER NOT NULL,
+    type         VARCHAR(50) NOT NULL,
+    title        VARCHAR(200) NOT NULL,
+    body         TEXT NOT NULL,
+    "isRead"     BOOLEAN NOT NULL DEFAULT false,
+    "entityType" VARCHAR(50),
+    "entityId"   INTEGER,
+    "createdAt"  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    "updatedAt"  TIMESTAMPTZ NOT NULL DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_notifications_user_read ON notifications ("userId", "isRead")`,
+  `CREATE INDEX IF NOT EXISTS idx_notifications_user_createdat ON notifications ("userId", "createdAt" DESC)`,
+
+  // ── users: discount & 2FA columns (may already exist) ───────────────────────
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS "discountStatus" VARCHAR(20) DEFAULT 'none'`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS "discountPct"    INTEGER     DEFAULT 0`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS "discountIdUrl"  TEXT`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS "discountType"   VARCHAR(30)`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS "twoFactorSecret"  VARCHAR(64)`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS "twoFactorEnabled" BOOLEAN DEFAULT false`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS preferences      JSONB DEFAULT '{"emailNotifications":true,"smsUpdates":true,"autoExtend":false}'::jsonb`,
+];
+
 const connectDB = async () => {
   try {
     await sequelize.authenticate();
@@ -101,6 +149,16 @@ const connectDB = async () => {
       }
     }
     console.log('✅  Performance indexes verified');
+
+    // Apply idempotent DDL migrations (new columns / tables not covered by Sequelize sync)
+    for (const sql of STARTUP_MIGRATIONS) {
+      try {
+        await sequelize.query(sql);
+      } catch (e) {
+        console.warn(`⚠️  Migration skipped: ${e.message.split('\n')[0]}`);
+      }
+    }
+    console.log('✅  Schema migrations applied');
 
   } catch (error) {
     console.error(`❌  PostgreSQL Error: ${error.message}`);

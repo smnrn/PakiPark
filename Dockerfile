@@ -1,15 +1,15 @@
 FROM node:20-alpine AS deps
-WORKDIR /app
+WORKDIR /app/src/Frontend
 
-COPY package*.json ./
+COPY src/Frontend/package*.json ./
 RUN npm ci
 
 FROM node:20-alpine AS builder
-WORKDIR /app
+WORKDIR /app/src/Frontend
 ENV NEXT_TELEMETRY_DISABLED=1
 
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+COPY --from=deps /app/src/Frontend/node_modules ./node_modules
+COPY src/Frontend ./
 RUN npm run build
 
 FROM node:20-alpine AS runner
@@ -20,9 +20,9 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
+COPY public ./public
+COPY --from=builder /app/src/Frontend/.next/standalone ./
+COPY --from=builder /app/src/Frontend/.next/static ./.next/static
 
 USER nextjs
 

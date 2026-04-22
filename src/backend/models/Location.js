@@ -16,7 +16,18 @@ const Location = sequelize.define(
       type: DataTypes.ENUM('active', 'maintenance', 'closed'),
       defaultValue: 'active',
     },
-    operatingHours: { type: DataTypes.STRING, defaultValue: '06:00 - 23:00' },
+    operatingHours: {
+      type: DataTypes.JSONB,
+      defaultValue: {
+        mon: { open: '06:00', close: '23:00', closed: false },
+        tue: { open: '06:00', close: '23:00', closed: false },
+        wed: { open: '06:00', close: '23:00', closed: false },
+        thu: { open: '06:00', close: '23:00', closed: false },
+        fri: { open: '06:00', close: '23:00', closed: false },
+        sat: { open: '06:00', close: '23:00', closed: false },
+        sun: { open: '06:00', close: '23:00', closed: false },
+      },
+    },
     amenities:      { type: DataTypes.ARRAY(DataTypes.TEXT), defaultValue: [] },
   },
   {

@@ -11,6 +11,7 @@ const { Op } = require('sequelize');
 const { Booking, Location, Vehicle, ParkingSlot, User } = require('../models/index');
 const { formatBooking } = require('../utils/formatters');
 const emailService = require('./emailService');
+const notificationService = require('./notificationService');
 const {
   windowsOverlap,
   isNoShowBooking,
@@ -112,10 +113,16 @@ const createBooking = async ({
 
   // ── 3. Fetch snapshots in parallel (3 lightweight PK lookups) ─────────────
   const [user, vehicle, location] = await Promise.all([
-    User.findByPk(parseInt(userId),     { attributes: ['id', 'name', 'email', 'phone'] }),
+    User.findByPk(parseInt(userId),     { attributes: ['id', 'name', 'email', 'phone', 'discountPct'] }),
     Vehicle.findByPk(parseInt(vehicleId), { attributes: ['id', 'brand', 'model', 'plateNumber', 'type', 'color'] }),
     Location.findByPk(parseInt(locationId), { attributes: ['id', 'name', 'address'] }),
   ]);
+
+  // ── 3b. Apply special discount (PWD / Senior Citizen — 20% off) ───────────
+  const discountPct = user?.discountPct || 0;
+  const finalAmount = discountPct > 0
+    ? Math.round(amount * (1 - discountPct / 100))
+    : amount;
 
   // ── 4. Create booking with all snapshot data inline ───────────────────────
   const booking = await Booking.create({
@@ -126,7 +133,7 @@ const createBooking = async ({
     spot:          resolvedSpot,
     date,
     timeSlot,
-    amount,
+    amount:        finalAmount,
     paymentMethod,
     paymentStatus: 'paid',
     status:        'upcoming',
@@ -157,7 +164,15 @@ const createBooking = async ({
   // ── 6. Fire-and-forget: transaction log + activity ─────────────────────────
   logBookingCreated({ booking: { ...formatted, id: booking.id }, userId });
 
-  // ── 7. Fire-and-forget: confirmation email ────────────────────────────────
+  // ── 7. Fire-and-forget: in-app notification ───────────────────────────────
+  notificationService.notifyBookingConfirmed(parseInt(userId), {
+    ...formatted,
+    id:           booking.id,
+    spot:         resolvedSpot,
+    locationName: location?.name || 'Parking Location',
+  });
+
+  // ── 8. Fire-and-forget: confirmation email ────────────────────────────────
   if (user?.email) {
     (async () => {
       try {
@@ -167,7 +182,7 @@ const createBooking = async ({
           spot:      resolvedSpot,
           date,
           timeSlot,
-          amount,
+          amount: finalAmount,
         });
       } catch (_) { /* email failure must never bubble up */ }
     })();

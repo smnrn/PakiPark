@@ -10,7 +10,7 @@
  *   completed / cancelled          → slot freed immediately
  */
 
-const GRACE_PERIOD_MIN    = 30;  // minutes after start before no-show is declared
+const GRACE_PERIOD_MIN    = 15;  // minutes after start before no-show is declared
 const CHECKOUT_BUFFER_MIN = 15;  // minutes after end before slot is re-bookable
 
 /**

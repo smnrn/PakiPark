@@ -23,9 +23,13 @@ const protect = async (req, res, next) => {
       return res.status(401).json({ success: false, message: 'User not found' });
     }
 
+    if (user.deletedAt) {
+      return res.status(401).json({ success: false, message: 'This account has been deleted' });
+    }
+
     // Attach instance to request; expose both .id and ._id for compatibility
     req.user = user;
-    req.user._id = user.id; // convenience alias
+    req.user._id = user.id;
 
     next();
   } catch (error) {

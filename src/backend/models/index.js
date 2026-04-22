@@ -32,6 +32,8 @@ const Settings       = require('./Settings');
 const ParkingRate    = require('./ParkingRate');
 const TransactionLog = require('./TransactionLog');
 const ActivityLog    = require('./ActivityLog');
+const Upload         = require('./Upload');
+const Notification   = require('./Notification');
 
 // No associations — loosely coupled by design.
 
@@ -46,4 +48,6 @@ module.exports = {
   ParkingRate,
   TransactionLog,
   ActivityLog,
+  Upload,
+  Notification,
 };

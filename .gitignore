@@ -34,3 +34,12 @@ coverage/
 # Temporary Files
 /tmp/
 /temp/
+
+# Agent and Tool-Specific
+.agents/
+.augment/
+.gemini/
+.antigravity/
+.antigravityignore
+PakiPark.code-workspace
+skills-lock.json

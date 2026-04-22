@@ -105,4 +105,52 @@ const deleteLocation = async (req, res) => {
   }
 };
 
-module.exports = { getLocations, getLocation, createLocation, updateLocation, deleteLocation };
+// PATCH /api/locations/:id/hours — admin or business_partner
+const { sequelize } = require('../config/db');
+const DEFAULT_SCHEDULE = {
+  mon: { open: '06:00', close: '23:00', closed: false },
+  tue: { open: '06:00', close: '23:00', closed: false },
+  wed: { open: '06:00', close: '23:00', closed: false },
+  thu: { open: '06:00', close: '23:00', closed: false },
+  fri: { open: '06:00', close: '23:00', closed: false },
+  sat: { open: '06:00', close: '23:00', closed: false },
+  sun: { open: '06:00', close: '23:00', closed: false },
+};
+const DAYS = ['mon','tue','wed','thu','fri','sat','sun'];
+
+const updateOperatingHours = async (req, res) => {
+  try {
+    if (!['admin','business_partner'].includes(req.user.role)) {
+      return res.status(403).json({ success: false, message: 'Not authorised' });
+    }
+    const location = await Location.findByPk(req.params.id);
+    if (!location) return res.status(404).json({ success: false, message: 'Location not found' });
+
+    const existing = location.getDataValue('operatingHours') ?? DEFAULT_SCHEDULE;
+    const base = typeof existing === 'string' ? DEFAULT_SCHEDULE : existing;
+    const merged = { ...base };
+    for (const day of DAYS) {
+      if (req.body[day]) {
+        merged[day] = {
+          open:   req.body[day].open   ?? base[day]?.open   ?? '06:00',
+          close:  req.body[day].close  ?? base[day]?.close  ?? '23:00',
+          closed: req.body[day].closed ?? base[day]?.closed ?? false,
+        };
+      }
+    }
+
+    await location.update({ operatingHours: merged });
+    await sequelize.query(
+      'UPDATE locations SET "operatingHoursJson" = :s::jsonb WHERE id = :id',
+      { replacements: { s: JSON.stringify(merged), id: location.id } }
+    );
+
+    const json = location.toJSON();
+    json.availableSpots = await recomputeAvailableSpots(location.id, location.totalSpots);
+    res.json({ success: true, data: json, message: 'Operating hours updated' });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+module.exports = { getLocations, getLocation, createLocation, updateLocation, deleteLocation, updateOperatingHours };

@@ -14,22 +14,42 @@ const User = sequelize.define(
     // { street, city, province }
     address:        { type: DataTypes.JSONB,   defaultValue: {} },
     dateOfBirth:    { type: DataTypes.DATEONLY },
+
+    // ── Verification ──────────────────────────────────────────────────────────
+    // Auto-set to true when phone + dateOfBirth + address are all non-empty.
     isVerified:     { type: DataTypes.BOOLEAN, defaultValue: false },
+
+    // ── Special Discount (PWD / Senior Citizen) ───────────────────────────────
+    // 'none'     → no discount request
+    // 'pending'  → ID uploaded, awaiting admin approval
+    // 'approved' → 20% discount active
+    // 'rejected' → admin rejected the request
+    discountStatus: {
+      type: DataTypes.ENUM('none', 'pending', 'approved', 'rejected'),
+      defaultValue: 'none',
+    },
+    discountPct:    { type: DataTypes.INTEGER,  defaultValue: 0 },        // 0 or 20
+    discountIdUrl:  { type: DataTypes.TEXT,     defaultValue: null },      // uploaded ID image (base64 or URL)
+    discountType:   { type: DataTypes.STRING(30), defaultValue: null },    // 'PWD' | 'senior_citizen'
+
+    // ── Two-Factor Authentication (TOTP) ─────────────────────────────────────
+    twoFactorSecret:  { type: DataTypes.STRING, defaultValue: null },      // TOTP base32 secret
+    twoFactorEnabled: { type: DataTypes.BOOLEAN, defaultValue: false },
+
     // { businessPermit, dtiSec, proofOfOwnership }
     documents:      { type: DataTypes.JSONB,   defaultValue: {} },
+
+    // Notification preferences (stored as JSONB)
+    preferences:    { type: DataTypes.JSONB,   defaultValue: { emailNotifications: true, smsUpdates: true, autoExtend: false } },
   },
   {
     tableName:  'users',
     timestamps: true,
     indexes: [
-      // ── Login / auth lookup ────────────────────────────────────────────
       { name: 'users_email_unique', unique: true, fields: ['email'] },
-
-      // ── Admin management: filter by role ──────────────────────────────
       { name: 'idx_users_role', fields: ['role'] },
-
-      // ── Profile search by name (LIKE queries benefit from this) ────────
       { name: 'idx_users_name', fields: ['name'] },
+      { name: 'idx_users_discount_status', fields: ['discountStatus'] },
     ],
   }
 );
@@ -38,6 +58,7 @@ User.prototype.toJSON = function () {
   const values = Object.assign({}, this.get());
   values._id = String(values.id);
   delete values.password;
+  delete values.twoFactorSecret;  // never expose secret in API responses
   return values;
 };
 
