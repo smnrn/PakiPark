@@ -140,22 +140,27 @@ function FaqItem({ q, a, accentColor }: { q: string; a: string; accentColor: str
   const [open, setOpen] = useState(false);
   return (
     <div
-      className={`border rounded-2xl overflow-hidden transition-all ${open ? 'border-gray-300 shadow-sm' : 'border-gray-100 hover:border-gray-200'}`}
+      className={`border rounded-2xl overflow-hidden transition-all duration-300 ${open ? 'border-transparent shadow-lg bg-white ring-1 ring-black/5' : 'border-gray-100 bg-white hover:border-gray-300 hover:shadow-md'
+        }`}
     >
       <button
-        className="w-full flex items-start justify-between gap-4 p-5 text-left"
+        className="w-full flex items-start justify-between gap-4 p-5 text-left group"
         onClick={() => setOpen(o => !o)}
       >
-        <span className="font-bold text-[#1e3d5a] text-sm leading-relaxed flex-1">{q}</span>
-        <ChevronDown
-          className={`size-5 shrink-0 mt-0.5 transition-transform duration-200`}
-          style={{ color: accentColor, transform: open ? 'rotate(180deg)' : undefined }}
-        />
+        <span className={`font-bold text-sm leading-relaxed flex-1 transition-colors ${open ? 'text-[#ee6b20]' : 'text-[#1e3d5a] group-hover:text-[#1e3d5a]/80'}`}>{q}</span>
+        <div
+          className={`size-6 rounded-full flex items-center justify-center shrink-0 transition-colors ${open ? 'bg-[#ee6b20]/10' : 'bg-gray-100 group-hover:bg-gray-200'}`}
+        >
+          <ChevronDown
+            className={`size-4 transition-transform duration-300`}
+            style={{ color: open ? '#ee6b20' : '#9ca3af', transform: open ? 'rotate(180deg)' : undefined }}
+          />
+        </div>
       </button>
       {open && (
         <div className="px-5 pb-5">
-          <div className="h-px bg-gray-100 mb-4" />
-          <p className="text-sm text-gray-600 leading-relaxed">{a}</p>
+          <div className="h-px bg-gradient-to-r from-gray-100 via-gray-200 to-transparent mb-4" />
+          <p className="text-sm text-gray-600 leading-relaxed pr-8">{a}</p>
         </div>
       )}
     </div>
@@ -165,7 +170,7 @@ function FaqItem({ q, a, accentColor }: { q: string; a: string; accentColor: str
 // ── Main FAQ Page ──────────────────────────────────────────────────────────────
 export default function FAQPage() {
   const router = useRouter();
-  const [query, setQuery]       = useState('');
+  const [query, setQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
 
   const filtered = CATEGORIES.flatMap(cat =>
@@ -179,25 +184,46 @@ export default function FAQPage() {
 
   return (
     <div className="min-h-screen bg-[#f4f7fa]">
+      <style>{`
+        @keyframes mascotIdeaFloat {
+          0%, 100% { transform: translateY(0px) rotate(-2deg); }
+          50% { transform: translateY(-12px) rotate(3deg); }
+        }
+      `}</style>
       {/* Header */}
-      <header className="bg-[#1e3d5a] text-white">
-        <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
+      <header className="bg-gradient-to-b from-[#1e3d5a] to-[#2a5373] text-white relative overflow-hidden shadow-lg border-b border-white/10">
+        {/* Decorative background glow */}
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-[#ee6b20]/10 blur-[100px] rounded-full pointer-events-none" />
+
+        <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between relative z-20">
           <div className="flex items-center gap-4">
-            <button onClick={() => router.back()} className="p-2 rounded-xl hover:bg-white/10 transition-colors">
+            <button onClick={() => router.back()} className="p-2 rounded-xl hover:bg-white/20 transition-colors backdrop-blur-sm bg-white/10 border border-white/10 shadow-sm">
               <ArrowLeft className="size-5" />
             </button>
-            <Image src={LOGO_SRC} alt="PakiPark" width={110} height={30} className="h-8 object-contain brightness-0 invert" unoptimized />
+            <Image src={LOGO_SRC} alt="PakiPark" width={110} height={30} className="h-8 object-contain brightness-0 invert drop-shadow-md" unoptimized />
           </div>
-          <div className="flex items-center gap-2 text-white/80">
-            <HelpCircle className="size-5" />
-            <span className="font-bold text-sm">Help Center</span>
+          <div className="flex items-center gap-2 text-white/90 bg-white/10 px-4 py-2.5 rounded-full backdrop-blur-sm border border-white/10 shadow-sm">
+            <HelpCircle className="size-4" />
+            <span className="font-bold text-sm tracking-wide">Help Center</span>
           </div>
         </div>
 
         {/* Hero */}
-        <div className="max-w-5xl mx-auto px-6 pb-10 pt-4 text-center">
-          <h1 className="text-3xl font-black mb-2">Frequently Asked Questions</h1>
-          <p className="text-white/60 text-sm mb-6">Find answers to common questions about PakiPark reservations, payments, and account management.</p>
+        <div className="max-w-5xl mx-auto px-6 pb-12 pt-4 text-center relative z-20">
+          {/* Animated Mascot Idea on Top Left */}
+          <div 
+            className="hidden lg:block absolute left-0 xl:-left-12 -top-6 w-56 h-56 xl:w-64 xl:h-64 pointer-events-none drop-shadow-[0_20px_40px_rgba(0,0,0,0.4)] z-30" 
+            style={{ animation: 'mascotIdeaFloat 4.5s ease-in-out infinite' }}
+          >
+            <img 
+              src="/assets/mascot-idea.png" 
+              alt="Mascot with a question" 
+              className="w-full h-full object-contain" 
+            />
+          </div>
+
+          <h1 className="text-3xl md:text-5xl font-black mb-3 tracking-tight drop-shadow-sm">Frequently Asked Questions</h1>
+          <p className="text-white/80 text-sm md:text-base mb-8 max-w-xl mx-auto">Find answers to common questions about PakiPark reservations, payments, and account management.</p>
 
           {/* Search */}
           <div className="relative max-w-xl mx-auto">
@@ -218,11 +244,10 @@ export default function FAQPage() {
         <div className="flex gap-2 flex-wrap">
           <button
             onClick={() => setActiveCategory('all')}
-            className={`px-4 py-2 rounded-full text-sm font-bold transition-all border ${
-              activeCategory === 'all'
-                ? 'bg-[#1e3d5a] text-white border-[#1e3d5a] shadow-sm'
-                : 'bg-white text-gray-600 border-gray-200 hover:border-[#1e3d5a]/40'
-            }`}
+            className={`px-4 py-2 rounded-full text-sm font-bold transition-all border ${activeCategory === 'all'
+              ? 'bg-[#1e3d5a] text-white border-[#1e3d5a] shadow-sm'
+              : 'bg-white text-gray-600 border-gray-200 hover:border-[#1e3d5a]/40'
+              }`}
           >
             All Topics
           </button>
@@ -230,11 +255,10 @@ export default function FAQPage() {
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
-              className={`px-4 py-2 rounded-full text-sm font-bold transition-all border flex items-center gap-1.5 ${
-                activeCategory === cat.id
-                  ? 'text-white border-transparent shadow-sm'
-                  : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
-              }`}
+              className={`px-4 py-2 rounded-full text-sm font-bold transition-all border flex items-center gap-1.5 ${activeCategory === cat.id
+                ? 'text-white border-transparent shadow-sm'
+                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                }`}
               style={activeCategory === cat.id ? { background: cat.color, borderColor: cat.color } : {}}
             >
               <cat.icon className="size-3.5" /> {cat.label}
@@ -291,17 +315,25 @@ export default function FAQPage() {
         )}
 
         {/* Still need help CTA */}
-        <div className="bg-gradient-to-br from-[#1e3d5a] to-[#2a5373] rounded-3xl p-8 flex flex-col sm:flex-row items-center gap-6 text-white">
-          <div className="size-16 bg-white/10 rounded-2xl flex items-center justify-center shrink-0">
-            <MessageCircle className="size-8" />
+        <div className="bg-gradient-to-br from-[#1e3d5a] to-[#2a5373] rounded-3xl p-8 flex flex-col md:flex-row items-center gap-6 text-white relative overflow-visible mt-24 shadow-2xl">
+
+          {/* Popping Mascot Image - Reduced size here */}
+          <div className="hidden md:block absolute bottom-0 left-8 w-48 h-48 lg:w-56 lg:h-56 z-10 pointer-events-none drop-shadow-2xl">
+            <img
+              src="/assets/mascot-transparent.png"
+              alt="PakiPark Mascot"
+              className="w-full h-full object-contain object-bottom"
+            />
           </div>
-          <div className="text-center sm:text-left flex-1">
-            <h3 className="font-black text-xl mb-1">Still have questions?</h3>
-            <p className="text-white/60 text-sm">Our support team is available during operating hours. You can also reach us via the contact details at the bottom of the home page.</p>
+
+          {/* Adjusted padding to match the smaller mascot */}
+          <div className="md:pl-56 lg:pl-64 text-center md:text-left flex-1 relative z-20">
+            <h3 className="font-black text-2xl mb-2">Still have questions?</h3>
+            <p className="text-white/80 text-sm max-w-md">Our support team is available during operating hours. You can also reach us via the contact details at the bottom of the home page.</p>
           </div>
           <button
             onClick={() => router.push('/')}
-            className="shrink-0 px-6 py-3 bg-[#ee6b20] hover:bg-[#d95a10] text-white font-bold rounded-xl transition-colors shadow-lg"
+            className="shrink-0 px-8 py-3.5 bg-[#ee6b20] hover:bg-[#d95a10] text-white font-bold rounded-xl transition-all shadow-xl hover:shadow-[#ee6b20]/30 hover:-translate-y-0.5 relative z-20"
           >
             Contact Us
           </button>

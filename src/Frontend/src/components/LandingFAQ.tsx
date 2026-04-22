@@ -65,61 +65,96 @@ export function LandingFAQ() {
   const activeQuestions = FAQ_DATA.find((d) => d.category === activeTab)?.items || [];
 
   return (
-    <section id="faq" className="py-24 bg-[#1e3d5a] text-white">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
-          <div>
-            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">Frequently asked questions</h2>
-            <p className="text-[#ee6b20] font-medium text-sm flex items-center gap-1.5 cursor-pointer hover:underline" onClick={() => router.push('/help')}>
-              <HelpCircle className="size-4" /> Go to full Help Center
+    <section id="faq" className="py-24 bg-gradient-to-b from-[#1e3d5a] to-[#152a40] text-white relative overflow-hidden">
+      {/* Decorative background elements */}
+      <div className="absolute top-0 right-0 w-1/2 h-full bg-[#ee6b20]/5 blur-[150px] rounded-full pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+
+          {/* Left Column: Text & Tabs */}
+          <div className="lg:col-span-5 flex flex-col relative h-full justify-center">
+            <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-4 text-white leading-tight">
+              Got Questions? <br className="hidden lg:block" />
+              <span className="text-[#ee6b20]">We've got answers.</span>
+            </h2>
+            <p className="text-white/70 text-lg mb-8 max-w-md">
+              Everything you need to know about parking with PakiPark. Can't find the answer you're looking for? Check out our full help center.
             </p>
+
+            {/* Toggle Pills */}
+            <div className="flex bg-[#2a5373]/80 p-1.5 rounded-full self-start mb-8 shadow-inner border border-white/5 backdrop-blur-sm">
+              <button
+                onClick={() => setActiveTab("Driver")}
+                className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${activeTab === "Driver"
+                  ? "bg-white text-[#1e3d5a] shadow-md"
+                  : "text-white/70 hover:text-white"
+                  }`}
+              >
+                For Drivers
+              </button>
+              <button
+                onClick={() => setActiveTab("Operator")}
+                className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${activeTab === "Operator"
+                  ? "bg-white text-[#1e3d5a] shadow-md"
+                  : "text-white/70 hover:text-white"
+                  }`}
+              >
+                For Operators
+              </button>
+            </div>
+
+            <button
+              onClick={() => router.push('/help')}
+              className="group flex items-center gap-2 text-[#ee6b20] font-bold text-sm bg-white/5 hover:bg-white/10 px-5 py-3 rounded-xl w-max transition-all border border-[#ee6b20]/20"
+            >
+              <HelpCircle className="size-5" />
+              Visit full Help Center
+            </button>
+
+            {/* Mobile Mascot Image */}
+            <div className="lg:hidden mt-8 flex justify-center pointer-events-none drop-shadow-2xl">
+              <img
+                src="/assets/mascot-transparent.png"
+                alt="PakiPark Mascot"
+                className="w-72 h-72 object-contain"
+              />
+            </div>
           </div>
 
-          {/* Toggle Pills */}
-          <div className="flex bg-[#2a5373] p-1.5 rounded-full self-start md:self-auto">
-            <button
-              onClick={() => setActiveTab("Driver")}
-              className={`px-5 py-2 rounded-full text-sm font-bold transition-all duration-300 ${
-                activeTab === "Driver"
-                  ? "bg-white text-[#1e3d5a] shadow-sm"
-                  : "text-white/70 hover:text-white"
-              }`}
-            >
-              Driver
-            </button>
-            <button
-              onClick={() => setActiveTab("Operator")}
-              className={`px-5 py-2 rounded-full text-sm font-bold transition-all duration-300 ${
-                activeTab === "Operator"
-                  ? "bg-white text-[#1e3d5a] shadow-sm"
-                  : "text-white/70 hover:text-white"
-              }`}
-            >
-              Operator
-            </button>
+          {/* Right Column: Accordion */}
+          <div className="lg:col-span-7 relative z-30">
+
+            {/* Desktop Mascot Image (Floating near FAQ) - Adjusted smaller and lower */}
+            <div className="hidden lg:block absolute -bottom-24 -left-48 lg:-left-60 xl:-left-72 w-[320px] h-[320px] z-40 pointer-events-none drop-shadow-2xl">
+              <img
+                src="/assets/mascot-transparent.png"
+                alt="PakiPark Mascot"
+                className="w-full h-full object-contain drop-shadow-[-10px_10px_30px_rgba(0,0,0,0.5)]"
+              />
+            </div>
+
+            <div className="bg-white/5 border border-white/10 p-6 md:p-8 rounded-3xl backdrop-blur-md shadow-2xl relative z-30">
+              <Accordion type="single" collapsible className="w-full space-y-3">
+                {activeQuestions.map((faq, index) => (
+                  <AccordionItem
+                    key={index}
+                    value={`item-${index}`}
+                    className="border border-white/10 bg-[#2a5373]/30 rounded-2xl overflow-hidden data-[state=open]:bg-[#2a5373]/60 transition-colors"
+                  >
+                    <AccordionTrigger className="text-left font-bold text-white hover:text-[#ee6b20] hover:no-underline px-6 py-5 group transition-colors data-[state=open]:text-[#ee6b20]">
+                      {faq.q}
+                    </AccordionTrigger>
+                    <AccordionContent className="text-white/70 leading-relaxed px-6 pb-6 text-sm">
+                      {faq.a}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </div>
           </div>
+
         </div>
-
-        {/* Accordion Questions */}
-        <Accordion type="single" collapsible className="w-full space-y-2">
-          {activeQuestions.map((faq, index) => (
-            <AccordionItem
-              key={index}
-              value={`item-${index}`}
-              className="border-b border-white/10"
-            >
-              <AccordionTrigger className="text-left font-semibold text-white/90 hover:text-[#ee6b20] hover:no-underline py-5 group transition-colors">
-                {faq.q}
-              </AccordionTrigger>
-              <AccordionContent className="text-white/60 leading-relaxed pb-6 text-sm">
-                {faq.a}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
-
       </div>
     </section>
   );

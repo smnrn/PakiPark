@@ -1,3 +1,5 @@
+"use client";
+import { useState } from "react";
 import { Button } from "./ui/button";
 import { ArrowRight, MapPin, Clock, Shield } from "lucide-react";
 
@@ -18,6 +20,8 @@ function PlayLogo() {
 }
 
 export function Hero() {
+  const [videoEnded, setVideoEnded] = useState(false);
+
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) element.scrollIntoView({ behavior: "smooth" });
@@ -26,11 +30,23 @@ export function Hero() {
   return (
     <section className="relative h-screen flex items-center overflow-hidden">
 
-      {/* Background image */}
+      {/* Static Background Image (revealed when video ends) */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url('https://i.imgur.com/Vi3f20c.jpeg')" }}
+        style={{ backgroundImage: "url('/assets/hero-bg-empty.jpg')" }}
       />
+
+      {/* Background Video */}
+      <video
+        autoPlay
+        muted
+        playsInline
+        onEnded={() => setVideoEnded(true)}
+        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${videoEnded ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+        poster="/assets/hero-bg-empty.jpg"
+      >
+        <source src="/assets/video-pakipark.mp4" type="video/mp4" />
+      </video>
       {/* Subtle dark overlay so text stays readable */}
       <div className="absolute inset-0 bg-black/30" />
 
@@ -125,15 +141,13 @@ export function Hero() {
             </div>
           </div>
 
-          {/* Right Illustration */}
-          <div className="relative hidden md:flex items-center justify-center lg:justify-end pt-40">
+          {/* Right Illustration (Appears after video ends) */}
+          <div className={`relative hidden md:flex items-center justify-center lg:justify-end pt-40 transition-opacity duration-1000 ease-in-out ${videoEnded ? 'opacity-100' : 'opacity-0'}`}>
             <div className="relative w-full max-w-xs lg:max-w-md">
               {/* Pulsing glow behind mascot */}
               <div
                 className="absolute inset-0 bg-[#ee6b20]/20 rounded-full blur-[80px]"
-                style={{
-                  animation: 'mascotGlow 3s ease-in-out infinite',
-                }}
+                style={{ animation: 'mascotGlow 3s ease-in-out infinite' }}
               />
               {/* Mascot with float + sway animation */}
               <img

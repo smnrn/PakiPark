@@ -52,8 +52,8 @@ export function HowItWorks() {
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-[#ee6b20]/10 rounded-full blur-3xl z-0" />
               
               <img
-                src="/assets/how-it-works-mobile.png"
-                alt="PakiPark Mobile Stack"
+                src="/assets/mascot-phones.png"
+                alt="PakiPark Mobile Stack with Mascot"
                 className="relative z-10 object-contain w-full h-full drop-shadow-2xl hover:scale-105 transition-transform duration-700 ease-out"
                 loading="lazy"
               />
