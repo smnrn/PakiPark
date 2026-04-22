@@ -1,75 +1,62 @@
 # PakiPark — Smart Parking Reservation System
 
-> **CCDI Capstone Project** · Stack: **Next.js (React)** + **NestJS (TypeScript)**
+> **Smart Parking Ecosystem** · Stack: **Next.js (App Router)** + **Express.js (Node.js)** + **PostgreSQL**
 
-## 🏗️ Project Structure (Monorepo)
+PakiPark is a comprehensive parking management and reservation platform designed to streamline the parking experience for both drivers and facility operators. It features real-time slot tracking, automated billing, and a modern, mascot-driven user interface.
+
+## 🏗️ Project Structure
 
 ```
 PakiPark/
-├── frontend/          ← Next.js 15 App Router (React 18 + TypeScript)
-│   ├── src/
-│   │   ├── app/       ← Pages (App Router)
-│   │   │   ├── teller/home/   ← Teller Dashboard
-│   │   │   └── ...
-│   │   ├── services/  ← API service layer
-│   │   └── lib/       ← API client
-│   └── public/assets/ ← Mascot images & static files
-│
-└── backend/           ← NestJS API (TypeScript)
-    ├── src/
-    │   ├── auth/          ← JWT auth
-    │   ├── bookings/      ← Booking management
-    │   ├── vehicles/      ← Vehicle management
-    │   ├── locations/     ← Parking locations
-    │   ├── parking-slots/ ← Slot grid & dashboard
-    │   ├── users/         ← User management
-    │   ├── reviews/       ← Location reviews
-    │   ├── analytics/     ← Booking analytics
-    │   ├── logs/          ← Activity & transaction logs
-    │   ├── settings/      ← System settings
-    │   └── database/      ← Sequelize / PostgreSQL
-    └── .env               ← DB credentials + JWT secret
+├── src/
+│   ├── Frontend/          ← Next.js 15 App Router (React 18 + TypeScript)
+│   │   ├── src/
+│   │   │   ├── app/       ← Pages (Home, Help Center, Auth)
+│   │   │   ├── components/ ← UI Components (Hero, LandingFAQ, Navbar)
+│   │   │   └── services/  ← API communication layer
+│   │   └── public/assets/ ← Mascot images, Hero video, & static files
+│   │
+│   └── Backend/           ← Express.js API (Node.js)
+│       ├── controllers/   ← Request handlers (Bookings, Slots, Users)
+│       ├── models/        ← Sequelize Database Models
+│       ├── routes/        ← API Endpoints
+│       ├── middleware/    ← Auth & Validation
+│       ├── scripts/       ← DB Sync & Maintenance
+│       └── server.js      ← Entry point
 ```
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 - Node.js 18+
-- npm 9+
+- PostgreSQL (or Supabase instance)
 
 ### 1. Install Dependencies
 
 ```bash
 # Backend
-cd backend
+cd src/Backend
 npm install
 
 # Frontend
-cd ../frontend
+cd ../Frontend
 npm install
 ```
 
 ### 2. Configure Environment
 
-Backend — copy and fill:
-```bash
-cp backend/.env.example backend/.env
-```
-
-Frontend — already set to `http://localhost:5000/api`:
-```bash
-cp frontend/.env.example frontend/.env.local
-```
+**Backend:** Create `src/Backend/.env` with your Supabase/PostgreSQL connection string.
+**Frontend:** Create `src/Frontend/.env.local` pointing `NEXT_PUBLIC_API_URL` to `http://localhost:5000/api`.
 
 ### 3. Run in Development
 
 ```bash
-# Terminal 1 — Backend (NestJS on port 5000)
-cd backend
-npm run start:dev
+# Terminal 1 — Backend (Port 5000)
+cd src/Backend
+npm run dev
 
-# Terminal 2 — Frontend (Next.js on port 3000)
-cd frontend
+# Terminal 2 — Frontend (Port 3000)
+cd src/Frontend
 npm run dev
 ```
 
@@ -77,48 +64,31 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ## 🔑 Tech Stack
 
-| Layer    | Technology          | Version |
-|----------|---------------------|---------|
-| Frontend | **Next.js**         | 15.x    |
-| Language | **TypeScript**      | 5.x     |
-| UI       | React 18, Tailwind, shadcn/ui components |   |
-| Backend  | **NestJS**          | 10.x    |
-| Language | **TypeScript** (JS strictly prohibited) | 5.x |
-| Database | **PostgreSQL** via Sequelize | 6.x |
-| Auth     | JWT (passport-jwt)  |         |
-| Hosting  | Supabase (PostgreSQL) |       |
+| Layer    | Technology          |
+|----------|---------------------|
+| Frontend | **Next.js 15** (React 18) |
+| Backend  | **Express.js** (Node.js) |
+| Database | **PostgreSQL** (via Sequelize ORM) |
+| UI/UX    | Tailwind CSS, Lucide Icons, Framer Motion |
+| Storage  | **Supabase** |
 
 ## 💡 Key Features
 
-- **Teller Dashboard** — scan/lookup, check-in, check-out with ₱15/hr overtime (first 2h free)
-- **Smart Slot Grid** — real-time availability, auto-assign, no-show detection
-- **Role-based Access** — customer, teller, admin, business_partner
-- **Denormalized Bookings** — snapshot columns for zero-join reads
-- **Refund Policy** — 100% / 50% / 0% based on time of cancellation
+- **Real-Time Reservations** — Tap and reserve parking spots in advance.
+- **Smart Hero Section** — Interactive intro video and mascot-driven storytelling.
+- **Advanced FAQ System** — Categorized help center with modern animations.
+- **Operator Dashboard** — Manage facility hours, parking slots, and transactions.
+- **Fair Billing** — Ceiling-based pricing (₱15/hr) with initial free grace periods.
+- **Mascot Identity** — Brand-integrated mascot for a friendly user experience.
 
-## 🌐 API Endpoints
+## 📋 Features Checklist
 
-Backend runs at `http://localhost:5000/api`
-
-| Route                          | Method | Auth     | Description              |
-|-------------------------------|--------|----------|--------------------------|
-| `/auth/login`                 | POST   | Public   | Login                    |
-| `/auth/register/customer`     | POST   | Public   | Register customer        |
-| `/bookings`                   | GET    | Staff    | All bookings             |
-| `/bookings/my`                | GET    | Customer | My bookings              |
-| `/bookings/:id/checkout`      | PATCH  | Staff    | Check-out + billing      |
-| `/parking-slots/dashboard/:id`| GET    | Auth     | Real-time slot grid      |
-| `/locations`                  | GET    | Public   | All locations            |
-
-## 📋 CCDI Compliance Checklist
-
-- [x] Frontend: **React** with **Next.js** framework
-- [x] Backend: **TypeScript** (no JavaScript)
-- [x] Backend: **NestJS** framework
-- [x] Monorepo structure (`frontend/` + `backend/`)
-- [x] PostgreSQL database
-- [x] JWT authentication
-- [x] Role-based access control
+- [x] Modern Hero with Video Background
+- [x] Framed Mascot Avatar Design System
+- [x] Multi-Category FAQ with search
+- [x] Responsive "How It Works" illustrations
+- [x] JWT-based Authentication
+- [x] Sequelize Database Synchronization
 
 ---
 
